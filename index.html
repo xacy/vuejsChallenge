@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monster Slayer</title>
+    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="css/foundation.min.css">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app">
+    <section class="row">
+        <div class="small-6 columns">
+            <h1 class="text-center">YOU</h1>
+            <div class="healthbar">
+                <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;" :style="youStyle">
+                    {{youHealth}}
+                </div>
+            </div>
+        </div>
+        <div class="small-6 columns">
+            <h1 class="text-center">MONSTER</h1>
+            <div class="healthbar">
+                <div class="healthbar text-center" style="background-color: green; margin: 0; color: white;" :style="monsterStyle">
+                    {{monsterHealth}}
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="row controls" v-if="!started">
+        <div class="small-12 columns">
+            <button id="start-game" v-on:click="started=!started">START NEW GAME</button>
+        </div>
+    </section>
+    <section class="row controls" v-else>
+        <div class="small-12 columns">
+            <button id="attack" v-on:click="attack()">ATTACK</button>
+            <button id="special-attack" v-on:click="specialAttack()">SPECIAL ATTACK</button>
+            <button id="heal" v-on:click="heal()">HEAL</button>
+            <button id="give-up" v-on:click="clear()">GIVE UP</button>
+        </div>
+    </section>
+    <section class="row log">
+        <div class="small-12 columns">
+            <ul>
+                <li v-for="(reg,index) in log" :class="index%2==0?'player-turn':'monster-turn'">
+                    <template v-if="index%2==0">
+                        <template v-if="reg>0">
+                            You heal yourself for: {{Math.abs(reg)}}
+                        </template>
+                        <template v-else>
+                            You hits for: {{Math.abs(reg)}}
+                        </template>
+                    </template>
+                    <template v-else>
+                        Monster hits for: {{Math.abs(reg)}}
+                    </template>
+                </li>
+            </ul>
+        </div>
+    </section>
+</div>
+<script>
+      
+      new Vue({
+        el: '#app',
+        data: {
+          youHealth: 100,
+          monsterHealth: 100,
+          started: false,
+          log: []
+        },
+        watch: {
+            youHealth: function (){
+                if(this.youHealth<=0){
+                    this.clear();
+                    alert("You lose!");
+                }
+            },
+            monsterHealth: function (){
+                if(this.monsterHealth<=0){
+                    alert("You win!");
+                    this.clear();
+                }
+            }
+        },
+        computed: {
+            youStyle: function (){
+                return {
+                    backgroundColor: (this.youHealth>50?'green':(this.youHealth>25?'orange':'red')),
+                    width: this.youHealth + '%'
+                  };
+            },
+            monsterStyle: function (){
+                return {
+                    backgroundColor: (this.monsterHealth>50?'green':(this.monsterHealth>25?'orange':'red')),
+                    width: this.monsterHealth + '%'
+                  };
+            }
+        },
+        methods: {
+            attack: function () {
+                console.log("attack!");
+                var attack=Math.round(Math.random() * (10 - 1) + 1);
+                this.monsterHealth-=attack;
+                this.log.push(-attack);
+                this.monsterAttack();
+            },
+            monsterAttack: function (){
+                var attack=Math.round(Math.random() * (10 - 1) + 1);
+                this.youHealth-=attack;
+                this.log.push(-attack);
+            },
+            heal: function () {
+                var heal=Math.round(Math.random() * (15 - 1) + 1);
+                this.youHealth+=heal;
+                this.log.push(heal);
+                this.monsterAttack();
+            },
+            specialAttack: function (){
+                var attack=Math.round(Math.random() * (15 - 5) + 5);
+                this.monsterHealth-=attack;
+                this.log.push(-attack);
+                this.monsterAttack();
+            },
+            clear: function (){
+                this.started=false;
+                this.youHealth=100;
+                this.monsterHealth=100;
+                this.log=[];
+            }
+        }
+      });
+      
+</script>
+
+</body>
+</html>
